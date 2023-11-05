@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recipe App - Add Recipe</title>
+</head>
+<body>
+    <header>
+        <h1>Recipe App</h1>
+    </header>
+    <main>
+        <h2>Add Recipe</h2>
+        <form>
+            <label for="recipeName">Recipe Name:</label>
+            <input type="text" id="recipeName" name="recipeName">
+            
+            <label for="cuisine">Cuisine:</label>
+            <select id="cuisine" name="cuisine">
+                <option value=1>Indian</option>
+                <option value=2>Italian</option>
+                <option value=3>Chinese</option>
+                <option value=4>American</option>
+                <option value=5>Mexican</option>
+                <option value=6>Other</option>
+            </select>
+            
+            <label for="description">Description:</label>
+            <textarea id="description" name="description"></textarea>
+            
+            <label for="instructions">Instructions:</label>
+            <textarea id="instructions" name="instructions"></textarea>
+            
+            <label for="time">Time (in minutes):</label>
+            <input type="number" id="time" name="time">
+            
+            <button type="submit">Add Recipe</button>
+        </form>
+    </main>
+    <footer>
+    </footer>
+    <a href="index.html">Back to Recipe List</a>
+</body>
+</html>
