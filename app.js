@@ -1,6 +1,7 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
+const Recipe = require('./public/Recipe'); 
 const app = express();
 const port = 4000;
 
@@ -28,20 +29,19 @@ app.post('/addRecipe', (req, res) => {
     });
 });
 
-// Route for deleting a recipe
-app.delete('/deleteRecipe/:recipeId', (req, res) => {
-    const recipeId = req.params.recipeId;
+app.delete('/deleteRecipe/:id', (req, res) => {
+    const { id } = req.params;
 
     const sql = 'DELETE FROM Recipes WHERE id = ?';
-    const values = [recipeId];
+    const values = [id];
 
     db.run(sql, values, (err) => {
         if (err) {
             console.error('Error deleting recipe:', err);
-            res.status(500).json({ error: 'Error deleting recipe.' });
+            res.status(500).send('Error deleting the recipe.');
         } else {
             console.log('Recipe deleted successfully');
-            res.sendStatus(204); // No content, successful deletion
+            res.sendStatus(200);
         }
     });
 });
@@ -74,7 +74,48 @@ app.get('/filterRecipes', (req, res) => {
     });
 });
 
-// Your existing code...
+app.put('/updateRecipe/:id', (req, res) => {
+    const { id } = req.params;
+    const { recipeName, cuisineId, time } = req.body;
+
+    const sql = 'UPDATE Recipes SET name = ?, cuisineId = ?, time = ? WHERE id = ?';
+    const values = [recipeName, cuisineId, time, id];
+
+    db.run(sql, values, (err) => {
+        if (err) {
+            console.error('Error updating recipe:', err);
+            res.status(500).send('Error updating the recipe.');
+        } else {
+            console.log('Recipe updated successfully');
+            res.redirect('/');
+        }
+    });
+});
+
+app.put('/updateRecipe/:id', async (req, res) => {
+    const { id } = req.params;
+    const { recipeName, cuisineId, time } = req.body;
+
+    try {
+        const recipe = await Recipe.findByPk(id);
+
+        if (!recipe) {
+            return res.status(404).send('Recipe not found');
+        }
+
+        recipe.name = recipeName;
+        recipe.cuisineId = cuisineId;
+        recipe.time = time;
+
+        await recipe.save();
+
+        console.log('Recipe updated successfully');
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Error updating recipe:', error);
+        res.status(500).send('Error updating the recipe.');
+    }
+});
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

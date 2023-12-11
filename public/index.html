@@ -54,12 +54,34 @@
                     <th>Recipe Name</th>
                     <th>Cuisine</th>
                     <th>Time (minutes)</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="recipesTableBody">
                 <!-- Table body will be populated dynamically using JavaScript -->
             </tbody>
         </table>
+        <div id="editModal" style="display: none;">
+            <form id="editForm">
+                <label for="editRecipeName">Edit Recipe Name:</label>
+                <input type="text" id="editRecipeName" name="editRecipeName">
+        
+                <label for="editCuisine">Edit Cuisine:</label>
+                <select id="editCuisine" name="editCuisine">
+                    <option value="1">Italian</option>
+                    <option value="2">Mexican</option>
+                    <option value="3">Chinese</option>
+                    <option value="4">Indian</option>
+                    <option value="5">American</option>
+                    <option value="6">Other</option>
+                </select>
+        
+                <label for="editTime">Edit Time (in minutes):</label>
+                <input type="number" id="editTime" name="editTime">
+        
+                <button type="submit">Update Recipe</button>
+            </form>
+        </div>
     </main>
     <footer>
     </footer>
@@ -78,30 +100,108 @@
 
             // Fetch recipes data from the server and update the table
             fetch('/filterRecipes') // Assuming this endpoint returns all recipes
-                .then(response => response.json())
-                .then(recipes => {
-                    const tableBody = document.getElementById('recipesTableBody');
+            .then(response => response.json())
+            .then(recipes => {
+                const tableBody = document.getElementById('recipesTableBody');
 
-                    recipes.forEach(recipe => {
-                        const row = document.createElement('tr');
-                        const nameCell = document.createElement('td');
-                        const cuisineCell = document.createElement('td');
-                        const timeCell = document.createElement('td');
+                recipes.forEach(recipe => {
+                    const row = document.createElement('tr');
+                    const nameCell = document.createElement('td');
+                    const cuisineCell = document.createElement('td');
+                    const timeCell = document.createElement('td');
+                    const editCell = document.createElement('td');
+                    const editButton = document.createElement('button');
+                    const deleteCell = document.createElement('td');
+                    const deleteButton = document.createElement('button');
 
-                        nameCell.textContent = recipe.name;
-                        cuisineCell.textContent = cuisineMap[recipe.cuisineId] || 'Unknown Cuisine';
-                        timeCell.textContent = recipe.time;
+                    nameCell.textContent = recipe.name;
+                    cuisineCell.textContent = cuisineMap[recipe.cuisineId] || 'Unknown Cuisine';
+                    timeCell.textContent = recipe.time;
+                    editButton.textContent = 'Edit';
+                    editButton.classList.add('edit-button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.classList.add('delete-button');
 
-                        // Append elements to the row
-                        row.appendChild(nameCell);
-                        row.appendChild(cuisineCell);
-                        row.appendChild(timeCell);
+                    // Add a click event listener to the edit button
+                    editButton.addEventListener('click', () => {
+                        // Populate the modal form with current recipe details
+                        const editRecipeNameInput = document.getElementById('editRecipeName');
+                        editRecipeNameInput.value = recipe.name;
 
-                        tableBody.appendChild(row);
+                        // Open the modal
+                        const editModal = document.getElementById('editModal');
+                        editModal.style.display = 'block';
+
+                        // Handle form submission
+                        const editForm = document.getElementById('editForm');
+                        editForm.addEventListener('submit', (event) => {
+                            event.preventDefault();
+
+                            // Get the edited recipe name from the form
+                            const editedRecipeName = editRecipeNameInput.value;
+
+                            // Send a PUT request to the server for updating the recipe
+                            fetch(`/updateRecipe/${recipe.id}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    recipeName: editedRecipeName,
+                                    cuisineId: recipe.cuisineId,
+                                    time: recipe.time,
+                                }),
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Error updating recipe');
+                                }
+                                // Close the modal after a successful update
+                                editModal.style.display = 'none';
+
+                                // Update the UI as needed
+                                // For simplicity, you can reload the page or update the specific row
+                            })
+                            .catch(error => console.error('Error updating recipe:', error));
+                        });
                     });
-                })
-                .catch(error => console.error('Error fetching recipes:', error));
-        });
-    </script>
+
+                    // Add a click event listener to the delete button
+                    deleteButton.addEventListener('click', () => {
+                        // Confirm deletion with the user
+                        const confirmDeletion = confirm('Are you sure you want to delete this recipe?');
+
+                        if (confirmDeletion) {
+                            row.remove();
+                            // Send a DELETE request to the server
+                            fetch(`/deleteRecipe/${recipe.id}`, {
+                                method: 'DELETE',
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Error deleting recipe');
+                                }
+                                // Remove the row from the UI after successful deletion
+                                row.remove();
+                            })
+                            .catch(error => console.error('Error deleting recipe:', error));
+                        }
+                    });
+
+                    // Append elements to the row
+                    editCell.appendChild(editButton);
+                    deleteCell.appendChild(deleteButton);
+                    row.appendChild(nameCell);
+                    row.appendChild(cuisineCell);
+                    row.appendChild(timeCell);
+                    row.appendChild(editCell);
+                    row.appendChild(deleteCell);
+
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching recipes:', error));
+    });
+</script>
 </body>
 </html>
