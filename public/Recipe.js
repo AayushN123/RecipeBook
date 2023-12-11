@@ -19,7 +19,7 @@ const Recipe = sequelize.define('Recipe', {
 }, {
     indexes: [
         {
-            unique: true,
+            unique: false,
             fields: ['name'], // Index on the 'name' column
         },
         {
