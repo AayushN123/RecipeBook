@@ -9,6 +9,7 @@
     </header>
     <main>
         <h2>Add Recipe</h2>
+        <!-- Your existing form for adding a recipe -->
         <form action="/addRecipe" method="POST">
             <label for="recipeName">Recipe Name:</label>
             <input type="text" id="recipeName" name="recipeName">
@@ -31,6 +32,7 @@
         </form>
 
         <h2>Filter Recipes by Cuisine</h2>
+        <!-- Your existing form for filtering recipes -->
         <form action="/filterRecipes" method="GET">
             <label for="filterCuisine">Select Cuisine:</label>
             <select id="filterCuisine" name="filterCuisine">
@@ -44,8 +46,62 @@
             </select>
             <button type="submit">Filter</button>
         </form>
+
+        <h2>Recipes</h2>
+        <table id="recipesTable">
+            <thead>
+                <tr>
+                    <th>Recipe Name</th>
+                    <th>Cuisine</th>
+                    <th>Time (minutes)</th>
+                </tr>
+            </thead>
+            <tbody id="recipesTableBody">
+                <!-- Table body will be populated dynamically using JavaScript -->
+            </tbody>
+        </table>
     </main>
     <footer>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Map cuisine IDs to names
+            const cuisineMap = {
+                1: 'Italian',
+                2: 'Mexican',
+                3: 'Chinese',
+                4: 'Indian',
+                5: 'American',
+                6: 'Other',
+            };
+
+            // Fetch recipes data from the server and update the table
+            fetch('/filterRecipes') // Assuming this endpoint returns all recipes
+                .then(response => response.json())
+                .then(recipes => {
+                    const tableBody = document.getElementById('recipesTableBody');
+
+                    recipes.forEach(recipe => {
+                        const row = document.createElement('tr');
+                        const nameCell = document.createElement('td');
+                        const cuisineCell = document.createElement('td');
+                        const timeCell = document.createElement('td');
+
+                        nameCell.textContent = recipe.name;
+                        cuisineCell.textContent = cuisineMap[recipe.cuisineId] || 'Unknown Cuisine';
+                        timeCell.textContent = recipe.time;
+
+                        // Append elements to the row
+                        row.appendChild(nameCell);
+                        row.appendChild(cuisineCell);
+                        row.appendChild(timeCell);
+
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching recipes:', error));
+        });
+    </script>
 </body>
 </html>
